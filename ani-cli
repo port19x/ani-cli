@@ -18,7 +18,7 @@ menu() {
 # provide menu. input format is either (ep_list) or (number \t anime_id \t anime_name)
 nth() {
     _stdin=$(cat -)
-    [ -z "$_stdin" ] && return 1
+    [ "$_stdin" == "" ] && return 1
     _line_count="$(printf "%s\n" "$_stdin" | wc -l | tr -d "[:space:]")"
     [ "$_line_count" -eq 1 ] && printf "%s" "$_stdin" | cut -f 2,3 && return 0
     _prompt="$1"
@@ -35,12 +35,12 @@ nth() {
 }
 
 die() {
-    printf "\33[2K\r\033[1;31m%s\033[0m\n" "$*" >&2
+	printf "\33[2K\r\033[1;31m%s\033[0m\n" "$*" >&2
     exit 1
 }
 
 info() {
-    printf "\33[2K\r\033[1;34m%s\033[0m\n" "$*"
+    printf "\33[2K\r\033[1;34m%s\033[0m\n" $*
 }
 
 help_info() {
