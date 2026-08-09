@@ -1,5 +1,7 @@
 # Pull Request Template
 
+- [ ] No Claude Review Please
+
 ## Type of change
 
 - [ ] Bug fix

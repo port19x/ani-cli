@@ -1,0 +1,85 @@
+name: Claude PR Review
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+    # pull_request_target always evaluates *this* file from the base branch,
+    # never the PR's copy, so a fork PR cannot alter review logic or exfiltrate
+    # secrets by editing the workflow. Ignoring the workflows path too is
+    # belt-and-suspenders: PRs that touch workflow files skip auto-review
+    # entirely rather than relying solely on that guarantee.
+    paths-ignore:
+      - ".github/workflows/**"
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  review:
+    # Opt-out: author checks "[ ] No Claude Review Please" in the PR body
+    # (present by default in PULL_REQUEST_TEMPLATE.md).
+    if: >-
+      !contains(github.event.pull_request.body, '[x] No Claude Review Please') &&
+      !contains(github.event.pull_request.body, '[X] No Claude Review Please')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6          # base branch at workspace root (trusted)
+
+      - uses: actions/checkout@v6          # PR head, isolated in a subdir
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          path: pr-head
+
+      - name: Install shfmt
+        run: |
+          go install mvdan.cc/sh/v3/cmd/shfmt@latest
+          echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
+          # shellcheck ships preinstalled on the ubuntu-latest runner image.
+
+      - uses: anthropics/claude-code-action@6d63f3a36cec5179d0cf49088ae8cef8ad18cf17  # v1.0.189
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+
+          # The action's default actor-permission check is skipped: this repo
+          # relies on pull_request_target's base-branch pinning + the
+          # paths-ignore filter above instead. That combo stops secret
+          # exfiltration and workflow tampering; it does NOT stop a stranger's
+          # PR from spending review quota or feeding Claude prompt-injected
+          # diff content. Blast radius of the latter is bounded by
+          # allowedTools below (read + comment only, plus two linters that
+          # only parse text and never execute it).
+          allowed_non_write_users: "*"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+          prompt: |
+            REPO: ${{ github.repository }}
+            PR NUMBER: ${{ github.event.pull_request.number }}
+
+            Review this shell script change. ani-cli is POSIX-sh, no bashisms,
+            no awk, no wget.
+
+            The PR's version of the script is checked out read-only at
+            pr-head/ani-cli. If it changed, run these two commands verbatim
+            (they are exactly what CI enforces) and use their output to drive
+            part of your review:
+
+              shellcheck -s sh -o all -e 2250 pr-head/ani-cli
+              shfmt -i 4 -ci -d pr-head/ani-cli
+
+            For every issue either tool reports, post an inline review
+            comment on the exact line via the inline-comment tool, with the
+            corrected code inside a ```suggestion fence so the author can
+            commit it with one click. Keep each suggestion to the minimal
+            diff needed to satisfy the tool — don't rewrite unrelated lines,
+            and don't invent style changes the tools didn't flag.
+
+            For anything beyond those two tools (logic bugs, portability,
+            security), use gh pr diff for context and comment normally.
+
+            Use `gh pr comment` for top-level feedback. Only post GitHub
+            comments — never edit files directly.
+
+          claude_args: |
+            --add-dir pr-head
+            --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*),Bash(shellcheck:*),Bash(shfmt:*)"
