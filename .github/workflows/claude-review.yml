@@ -74,6 +74,20 @@ jobs:
             diff needed to satisfy the tool — don't rewrite unrelated lines,
             and don't invent style changes the tools didn't flag.
 
+            Also check the version bump. The base branch's ani-cli is at
+            ./ani-cli (workspace root); the PR's is at pr-head/ani-cli. Compare
+            the `version_number="X.Y.Z"` line between the two:
+              - If ani-cli wasn't changed by the PR, skip this check.
+              - If it was changed but version_number is identical to base (or
+                lower), the bump is missing. Suggest fixing it by always
+                incrementing the patch number (the third, z component) by 1
+                from the base value — regardless of how large the rest of the
+                diff is, do not judge whether it should be a minor or major
+                bump instead. Post this as an inline ```suggestion``` on the
+                version_number line so it's committable in one click.
+              - If version_number already increased in any way, leave it
+                alone.
+
             For anything beyond those two tools (logic bugs, portability,
             security), use gh pr diff for context and comment normally.
 
