@@ -98,6 +98,6 @@ jobs:
           # --model claude-opus-5
           # --effort medium
           claude_args: |
-            --model claude-haiku-4.5
+            --model claude-haiku-4-5
             --add-dir pr-head
             --allowedTools "mcp__github_inline_comment__create_inline_comment,mcp__github__add_issue_comment,mcp__github_comment__update_claude_comment,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*),Bash(shellcheck:*),Bash(shfmt:*)"
