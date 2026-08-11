@@ -67,12 +67,29 @@ jobs:
               shellcheck -s sh -o all -e 2250 pr-head/ani-cli
               shfmt -i 4 -ci -d pr-head/ani-cli
 
-            For every issue either tool reports, post an inline review
-            comment on the exact line via the inline-comment tool, with the
-            corrected code inside a ```suggestion fence so the author can
-            commit it with one click. Keep each suggestion to the minimal
-            diff needed to satisfy the tool — don't rewrite unrelated lines,
-            and don't invent style changes the tools didn't flag.
+            For every issue either tool reports, post one inline review
+            comment on the exact line via the inline-comment tool.
+  
+            shellcheck findings: the entire comment body is a markdown link
+            to the rule wiki, then the suggestion fence. Nothing else.
+            example link: [SC2086](https://www.shellcheck.net/wiki/SC2086)
+  
+            shfmt findings: the body is the literal string `shfmt -i 4 -ci`,
+            then the suggestion fence. Nothing else. No prose, no rationale,
+            no explanation of what the rule means in either case.
+  
+            The fence replaces exactly the lines you anchored to. One anchored
+            line means exactly one line in the fence. Count both before calling
+            the tool; they must match, closing braces included. Never post a
+            comment that corrects or supersedes an earlier comment of yours;
+            if a fence is not certainly byte-exact, drop the fence.
+    
+            After all inline comments are posted, post exactly one top-level
+            `gh pr comment`. This is the only place prose belongs. Cover what
+            the change does, whether the approach holds up, and any logic,
+            portability or security concern the linters cannot see. Include
+            the version bump verdict here if it applies. Under 150 words, no
+            headings, no bullet list of the inline comments you already posted.
 
             Also check the version bump. The base branch's ani-cli is at
             ./ani-cli (workspace root); the PR's is at pr-head/ani-cli. Compare
