@@ -77,10 +77,10 @@ jobs:
             one line plus a ```suggestion fence holding the minimal fix,
             nothing else. For shellcheck that line is a markdown link to
             https://www.shellcheck.net/wiki/SC0000 titled with the code; for
-            shfmt it is the literal `shfmt -i 4 -ci`. The fence replaces
-            exactly the lines you anchor to, closing braces included, so count
-            both before posting. Never post a comment correcting an earlier
-            one; drop the fence if unsure.
+            shfmt it is the literal `shfmt -i 4 -ci`, including the backticks.
+            The fence replaces exactly the lines you anchor to, closing braces
+            included, so count both before posting. Never post a comment
+            correcting an earlier one; drop the fence if unsure.
   
             Version verdict: if ani-cli changed and `version_number="X.Y.Z"` is
             unchanged or lower than base, say so and give the base patch number
