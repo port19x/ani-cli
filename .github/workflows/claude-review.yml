@@ -55,64 +55,37 @@ jobs:
           prompt: |
             REPO: ${{ github.repository }}
             PR NUMBER: ${{ github.event.pull_request.number }}
-
-            Review this shell script change. ani-cli is POSIX-sh, no bashisms,
-            no awk, no wget.
-
-            The PR's version of the script is checked out read-only at
-            pr-head/ani-cli. If it changed, run these two commands verbatim
-            (they are exactly what CI enforces) and use their output to drive
-            part of your review:
-
-              shellcheck -s sh -o all -e 2250 pr-head/ani-cli
-              shfmt -i 4 -ci -d pr-head/ani-cli
-
-            For every issue either tool reports, post one inline review
-            comment on the exact line via the inline-comment tool.
   
-            shellcheck findings: the entire comment body is a markdown link
-            to the rule wiki, then the suggestion fence. Nothing else.
-            example link: [SC2086](https://www.shellcheck.net/wiki/SC2086)
+            Review this shell script change. ani-cli is POSIX-sh: no bashisms,
+            no awk, no wget. Base version at ./ani-cli, PR version at
+            pr-head/ani-cli. Only post comments, never edit files.
   
-            shfmt findings: the body is the literal string "`shfmt -i 4 -ci`",
-            (including the backticks, so it renders as inline code),
-            then the suggestion fence. Nothing else. No prose, no rationale,
-            no explanation of what the rule means in either case.
+            Gather first: `gh pr diff`, plus, if ani-cli changed, verbatim
   
-            The fence replaces exactly the lines you anchored to. One anchored
-            line means exactly one line in the fence. Count both before calling
-            the tool; they must match, closing braces included. Never post a
-            comment that corrects or supersedes an earlier comment of yours;
-            if a fence is not certainly byte-exact, drop the fence.
-    
-            After all inline comments are posted, post exactly one top-level
-            `gh pr comment`. This is the only place prose belongs. Cover what
-            the change does, whether the approach holds up, and any logic,
-            portability or security concern the linters cannot see. Include
-            the version bump verdict here if it applies. Under 150 words, no
-            headings, no bullet list of the inline comments you already posted.
-
-            Also check the version bump. The base branch's ani-cli is at
-            ./ani-cli (workspace root); the PR's is at pr-head/ani-cli. Compare
-            the `version_number="X.Y.Z"` line between the two:
-              - If ani-cli wasn't changed by the PR, skip this check.
-              - If it was changed but version_number is identical to base (or
-                lower), the bump is missing. Suggest fixing it by always
-                incrementing the patch number (the third, z component) by 1
-                from the base value — regardless of how large the rest of the
-                diff is, do not judge whether it should be a minor or major
-                bump instead. The version_number line itself is unchanged, so
-                it isn't part of the diff and can't be anchored with an
-                inline/suggestion comment — raise it in the top-level
-                `gh pr comment` instead, stating the exact line to change.
-              - If version_number already increased in any way, leave it
-                alone.
-
-            For anything beyond those two tools (logic bugs, portability,
-            security), use gh pr diff for context and comment normally.
-
-            Use `gh pr comment` for top-level feedback. Only post GitHub
-            comments — never edit files directly.
+                shellcheck -s sh -o all -e 2250 pr-head/ani-cli
+                shfmt -i 4 -ci -d pr-head/ani-cli
+  
+            Then produce exactly two things, in this order.
+  
+            1. One top-level `gh pr comment`, always, even when both linters
+            are clean. The only place prose belongs. What the change does,
+            whether the approach holds up, any logic, portability or security
+            concern the linters cannot see, plus the version verdict below.
+            Under 150 words, no headings, no recap of the inline comments.
+  
+            2. One inline comment per linter finding, prose-free. The body is
+            one line plus a ```suggestion fence holding the minimal fix,
+            nothing else. For shellcheck that line is a markdown link to
+            https://www.shellcheck.net/wiki/SC0000 titled with the code; for
+            shfmt it is the literal `shfmt -i 4 -ci`. The fence replaces
+            exactly the lines you anchor to, closing braces included, so count
+            both before posting. Never post a comment correcting an earlier
+            one; drop the fence if unsure.
+  
+            Version verdict: if ani-cli changed and `version_number="X.Y.Z"` is
+            unchanged or lower than base, say so and give the base patch number
+            incremented by one. Never judge minor or major. If it already
+            increased, say nothing.
 
           claude_args: |
             --model claude-opus-5
