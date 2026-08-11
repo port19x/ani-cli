@@ -74,7 +74,8 @@ jobs:
             to the rule wiki, then the suggestion fence. Nothing else.
             example link: [SC2086](https://www.shellcheck.net/wiki/SC2086)
   
-            shfmt findings: the body is the literal string `shfmt -i 4 -ci`,
+            shfmt findings: the body is the literal string "`shfmt -i 4 -ci`",
+            (including the backticks, so it renders as inline code),
             then the suggestion fence. Nothing else. No prose, no rationale,
             no explanation of what the rule means in either case.
   
@@ -115,6 +116,6 @@ jobs:
 
           claude_args: |
             --model claude-opus-5
-            --effort high
+            --effort low
             --add-dir pr-head
             --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*),Bash(shellcheck:*),Bash(shfmt:*)"
